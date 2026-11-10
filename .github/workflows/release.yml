@@ -24,15 +24,6 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build dockerfile
-        run: make docker
-
       - name: Build binaries
         run: make binaries
 
@@ -60,7 +51,7 @@ jobs:
             In order to verify the release, you'll need to have `gpg` or `gpg2` installed on your system. You'll first need to import the keys that have signed this release if you haven't done so already: 
 
             ```
-            curl https://boltz.exchange/static/boltz.asc | gpg --import
+            curl https://raw.githubusercontent.com/AquaWallet/indra-client/master/keys/aqua.asc | gpg --import
             ```
 
             Once you have the required PGP keys, you can verify the release (assuming `boltz-client-manifest-${{ env.RELEASE_VERSION }}.txt.sig` and `boltz-client-manifest-${{ env.RELEASE_VERSION }}.txt` are in the current directory) with:
