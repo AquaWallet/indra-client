@@ -6,6 +6,10 @@ on:
       - "v*.*.*"
   workflow_dispatch:
 
+# The organization defaults the token to read-only; creating the release needs write
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build binaries
@@ -48,28 +52,7 @@ jobs:
             
             # Verifying the Release
 
-            In order to verify the release, you'll need to have `gpg` or `gpg2` installed on your system. You'll first need to import the keys that have signed this release if you haven't done so already: 
-
-            ```
-            curl https://raw.githubusercontent.com/AquaWallet/indra-client/master/keys/aqua.asc | gpg --import
-            ```
-
-            Once you have the required PGP keys, you can verify the release (assuming `boltz-client-manifest-${{ env.RELEASE_VERSION }}.txt.sig` and `boltz-client-manifest-${{ env.RELEASE_VERSION }}.txt` are in the current directory) with:
-
-            ```
-            gpg --verify boltz-client-manifest-${{ env.RELEASE_VERSION }}.txt.sig boltz-client-manifest-${{ env.RELEASE_VERSION }}.txt
-            ```
-
-            You should see the following if the verification was successful:
-
-            ```
-            gpg: Signature made Mon Dec 15 16:00:38 2025 CET
-            gpg:                using RSA key 8918FFBFFB49E93EF256D930542A7F22A3BD9CB0
-            gpg: Good signature from "Boltz (Boltz signing key) <admin@bol.tz>" [unknown]
-            Primary key fingerprint: 8918 FFBF FB49 E93E F256  D930 542A 7F22 A3BD 9CB0
-            ```
-            
-            You should also verify that the hashes still match with the archive you've downloaded.
+            Verify that the hashes match the archive you've downloaded.
             
             ```
             sha256sum --ignore-missing -c boltz-client-manifest-${{ env.RELEASE_VERSION }}.txt
