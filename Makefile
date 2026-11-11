@@ -1,6 +1,6 @@
 PKG := github.com/BoltzExchange/boltz-client/v2
-VERSION := 2.12.5
-GO_VERSION := 1.26.2-bookworm
+VERSION := 2.12.6
+GO_VERSION := 1.26.10-bookworm
 RUST_VERSION := $(shell awk -F'"' '/^channel = / {print $$2}' rust-toolchain.toml)
 
 PKG_BOLTZD := $(PKG)/cmd/boltzd
@@ -194,7 +194,7 @@ DOCKER_CACHE_FROM_ARGS := \
 DOCKER_CACHE_TO_ARGS := \
 	--cache-to type=registry,ref=$(DOCKER_CACHE),mode=max
 DOCKER_CACHE_ARGS := $(DOCKER_CACHE_FROM_ARGS) $(DOCKER_CACHE_TO_ARGS)
-DOCKER_BINARY_CACHE_ARGS ?= $(DOCKER_CACHE_FROM_ARGS)
+DOCKER_BINARY_CACHE_ARGS ?=
 
 docker:
 	@$(call print, "Building docker image")

@@ -52,6 +52,10 @@ func (nursery *Nursery) startBlockListener(currency boltz.Currency) *utils.Chann
 }
 
 func (nursery *Nursery) checkRefundableSwaps(currency boltz.Currency, height uint32) error {
+	// A swap update can be refunding the same swap; without the lock the second broadcast fails and marks it as errored
+	nursery.updateLock.Lock()
+	defer nursery.updateLock.Unlock()
+
 	swaps, chainSwaps, err := nursery.database.QueryAllRefundableSwaps(nil, currency, height)
 	if err != nil {
 		return fmt.Errorf("could not query refundable Swaps: %w", err)
