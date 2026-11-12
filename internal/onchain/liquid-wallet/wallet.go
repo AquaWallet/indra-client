@@ -108,7 +108,8 @@ func (b *BlockchainBackend) connectClient(config clientConfig) (lwk.EsploraClien
 	}
 }
 
-const MainnetElectrumBackup = "elements-mainnet.blockstream.info:50002"
+const MainnetElectrum = "elements-mainnet.blockstream.info:50002"
+const MainnetEsploraBackup = "https://blockstream.info/liquid/api"
 const DefaultMergeThreshold = uint32(100)
 const DefaultConsolidationThreshold = uint64(200)
 const DefaultEsploraConcurrency = uint32(32)
@@ -143,41 +144,40 @@ func NewBackend(cfg Config) (*BlockchainBackend, error) {
 		backend.clientConfigs = append(backend.clientConfigs, clientConfig{
 			electrum: cfg.Electrum,
 		})
-	} else {
-		esplora := cfg.Esplora
-		if esplora == nil {
-			switch cfg.Network {
-			case boltz.Regtest:
-				esplora = &EsploraConfig{
-					Url:       "http://localhost:3003",
-					Waterfall: false,
-				}
-			case boltz.MainNet:
-				esplora = &EsploraConfig{
-					Url:       "https://esplora.bol.tz/liquid",
-					Waterfall: true,
-				}
-			default:
-				return nil, errors.New("esplora is required")
-			}
-		}
-		logger.Infof("Liquid: wallet backend: %s", esplora.Url)
+	} else if cfg.Esplora != nil {
+		logger.Infof("Liquid: wallet backend: %s", cfg.Esplora.Url)
 		backend.clientConfigs = append(backend.clientConfigs, clientConfig{
-			esplora: esplora,
+			esplora: cfg.Esplora,
 		})
-
-		// only add the default electrum client if no custom esplora is configured
-		if cfg.Esplora == nil {
-			if cfg.Network == boltz.MainNet {
-				url := MainnetElectrumBackup
-				logger.Infof("Liquid: wallet backend fallback: ssl://%s", url)
-				backend.clientConfigs = append(backend.clientConfigs, clientConfig{
-					electrum: &onchain.ElectrumOptions{
-						Url: url,
-						SSL: true,
-					},
-				})
+	} else {
+		switch cfg.Network {
+		case boltz.Regtest:
+			esplora := &EsploraConfig{
+				Url:       "http://localhost:3003",
+				Waterfall: false,
 			}
+			logger.Infof("Liquid: wallet backend: %s", esplora.Url)
+			backend.clientConfigs = append(backend.clientConfigs, clientConfig{
+				esplora: esplora,
+			})
+		case boltz.MainNet:
+			// Boltz's esplora.bol.tz is gone, so mainnet defaults to Blockstream's public servers
+			electrum := &onchain.ElectrumOptions{
+				Url: MainnetElectrum,
+				SSL: true,
+			}
+			esplora := &EsploraConfig{
+				Url:       MainnetEsploraBackup,
+				Waterfall: false,
+			}
+			logger.Infof("Liquid: wallet backend: ssl://%s", electrum.Url)
+			logger.Infof("Liquid: wallet backend fallback: %s", esplora.Url)
+			backend.clientConfigs = append(backend.clientConfigs,
+				clientConfig{electrum: electrum},
+				clientConfig{esplora: esplora},
+			)
+		default:
+			return nil, errors.New("esplora is required")
 		}
 	}
 
