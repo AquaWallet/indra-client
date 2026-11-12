@@ -64,14 +64,6 @@ func NewBackend(cfg Config) (*Backend, error) {
 		logger.Infof("BTC: wallet backend: %s", electrum)
 	}
 	electrumServers := []*onchain.ElectrumOptions{electrum}
-	if cfg.Electrum == nil && cfg.Network == boltz.MainNet {
-		boltzElectrum := &onchain.ElectrumOptions{
-			Url: "esplora.bol.tz:50002",
-			SSL: true,
-		}
-		logger.Infof("BTC: wallet backend fallback: %s", boltzElectrum)
-		electrumServers = append(electrumServers, boltzElectrum)
-	}
 	return &Backend{
 		chainClients:    sync.Map{},
 		electrumServers: electrumServers,

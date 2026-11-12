@@ -34,6 +34,7 @@ export PKG_CONFIG_ALLOW_CROSS=1
 export CC="$linker"
 export CXX="${tool_prefix}g++"
 export AR="${tool_prefix}ar"
+export OBJCOPY="${tool_prefix}objcopy"
 
 case "$rust_target" in
   x86_64-unknown-linux-gnu)

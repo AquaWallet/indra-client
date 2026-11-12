@@ -50,7 +50,7 @@ routingFeeLimitPpm = 2500
 [BOLTZ]
 # By default the daemon automatically connects to the official Boltz Backend for the network your node is on
 # This value is used to overwrite that
-# url = "https://api.boltz.exchange"
+# url = "https://indra.aquabtc.com"
 
 [DATABASE]
 # Path to the SQLite database file

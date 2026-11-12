@@ -1,6 +1,6 @@
 PKG := github.com/BoltzExchange/boltz-client/v2
-VERSION := 2.12.6
-GO_VERSION := 1.26.10-bookworm
+VERSION := 2.12.7
+GO_VERSION := 1.26.11-bookworm
 RUST_VERSION := $(shell awk -F'"' '/^channel = / {print $$2}' rust-toolchain.toml)
 
 PKG_BOLTZD := $(PKG)/cmd/boltzd
@@ -103,20 +103,28 @@ RUST_TARGET ?=
 RUST_TARGET_ARG := $(if $(RUST_TARGET),--target $(RUST_TARGET),)
 RUST_RELEASE_DIR := $(if $(RUST_TARGET),$(RUST_TARGET)/,)release
 
+# Go 1.26.11 refuses to link objects carrying LLVM bitcode, which Rust embeds
+# in its static libraries. The bitcode is only used for LTO, so strip it.
+OBJCOPY ?= objcopy
+STRIP_BITCODE := $(OBJCOPY) --remove-section=.llvmbc --remove-section=.llvmcmd
+
+# Go also scans every file in a -L directory, so bolt12 links from its own
+# directory instead of cargo's target tree.
+BOLT12_PATH := internal/lightning/lib/bolt12
+BOLT12_DIST := $(BOLT12_PATH)/dist
+
 build-bolt12:
 	@$(call print, "Building bolt12")
-	cd internal/lightning/lib/bolt12 && cargo build --release $(RUST_TARGET_ARG)
-	@if [ -n "$(RUST_TARGET)" ]; then \
-		mkdir -p internal/lightning/lib/bolt12/target/release && \
-		cp internal/lightning/lib/bolt12/target/$(RUST_RELEASE_DIR)/libbolt12.a \
-			internal/lightning/lib/bolt12/target/$(RUST_RELEASE_DIR)/libbolt12.so \
-			internal/lightning/lib/bolt12/target/release/; \
-	fi
+	cd $(BOLT12_PATH) && cargo build --release $(RUST_TARGET_ARG)
+	mkdir -p $(BOLT12_DIST)
+	cp $(BOLT12_PATH)/target/$(RUST_RELEASE_DIR)/libbolt12.a $(BOLT12_PATH)/target/$(RUST_RELEASE_DIR)/libbolt12.so $(BOLT12_DIST)/
+	$(STRIP_BITCODE) $(BOLT12_DIST)/libbolt12.a
 
 build-lwk:
 	@$(call print, "Building lwk")
 	cd lwk/lwk_bindings && cargo build --release $(RUST_TARGET_ARG) --lib
 	cp lwk/target/$(RUST_RELEASE_DIR)/liblwk.a lwk/target/$(RUST_RELEASE_DIR)/liblwk.so internal/onchain/liquid-wallet/lwk/
+	$(STRIP_BITCODE) internal/onchain/liquid-wallet/lwk/liblwk.a
 
 BDK_BINDINGS_PATH := ./bdk
 
@@ -124,6 +132,7 @@ build-bdk:
 	@$(call print, "Building bdk")
 	cd $(BDK_BINDINGS_PATH) && cargo build --release $(RUST_TARGET_ARG) --lib
 	cp $(BDK_BINDINGS_PATH)/target/$(RUST_RELEASE_DIR)/libbdk.a $(BDK_BINDINGS_PATH)/target/$(RUST_RELEASE_DIR)/libbdk.so internal/onchain/bitcoin-wallet/bdk/
+	$(STRIP_BITCODE) internal/onchain/bitcoin-wallet/bdk/libbdk.a
 
 build: build-bolt12 build-lwk build-bdk
 	@$(call print, "Building boltz-client")

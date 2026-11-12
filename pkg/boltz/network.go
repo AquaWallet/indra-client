@@ -23,7 +23,7 @@ var MainNet = &Network{
 		CurrencyBtc:    "bc1p28f027j7nte0pprte30nz4qxx65uc3rur23pukjganmzfwejj5lqjq5lky",
 		CurrencyLiquid: "lq1pqtfldcsfag6u5lv20f85zjp68x99er90jxlqv3yc3ucy9zd3tt0ndztxkr9jaxynl8l4hvsfch7slg7l52pfw49te3wrhwazr9lq9s6y2cgwtpn9wv7z",
 	},
-	DefaultBoltzUrl: "https://api.boltz.exchange",
+	DefaultBoltzUrl: "https://indra.aquabtc.com",
 }
 
 var TestNet = &Network{
