@@ -3,6 +3,6 @@
 package lightning
 
 /*
-#cgo LDFLAGS: -L${SRCDIR}/lib/bolt12/target/release -lbolt12 -Wl,-rpath=${SRCDIR}/lib/bolt12/target/release
+#cgo LDFLAGS: -L${SRCDIR}/lib/bolt12/dist -lbolt12 -Wl,-rpath=${SRCDIR}/lib/bolt12/dist
 */
 import "C"
